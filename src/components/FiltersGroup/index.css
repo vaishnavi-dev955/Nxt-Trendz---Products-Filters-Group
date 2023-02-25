@@ -1,0 +1,68 @@
+.filters-group-container {
+  margin-top: 16px;
+}
+
+@media screen and (min-width: 768px) {
+  .filters-group-container {
+    width: 30%;
+    max-width: 350px;
+    margin-top: 48px;
+    flex-shrink: 0;
+  }
+}
+
+/* Write your CSS here */
+.category-container {
+  list-style-type: none;
+}
+
+.paragraph {
+  color: #64748b;
+}
+
+.rating-style {
+  height: 30px;
+  width: 150px;
+}
+
+.rating-container {
+  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+.rating-button {
+  border: 0px solid;
+  background-color: transparent;
+  height: 40px;
+  background-color: #ffffff;
+  margin: 10px;
+}
+
+.list-item {
+  background-color: #ffffff;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+.category-button {
+  border: 0px solid;
+  background-color: transparent;
+  height: 30px;
+  background-color: #ffffff;
+}
+
+.ClearFilters-button {
+  border: 1px solid #0967d2;
+  background-color: transparent;
+  height: 40px;
+  background-color: #ffffff;
+  color: #0967d2;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
