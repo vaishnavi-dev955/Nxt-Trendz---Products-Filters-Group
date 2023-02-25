@@ -31,6 +31,13 @@ const categoryOptions = [
   },
 ]
 
+const apiStatusConstants = {
+  initial: 'INITIAL',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+  inProgress: 'IN_PROGRESS',
+}
+
 const sortbyOptions = [
   {
     optionId: 'PRICE_HIGH',
@@ -68,12 +75,11 @@ const ratingsList = [
 class AllProductsSection extends Component {
   state = {
     productsList: [],
-    isLoading: false,
     activeOptionId: sortbyOptions[0].optionId,
     activecategoryId: '',
     activeRatingId: '',
     searchInput: '',
-    apiFailure: false,
+    apiStatus: apiStatusConstants.initial,
   }
 
   componentDidMount() {
@@ -82,7 +88,7 @@ class AllProductsSection extends Component {
 
   getProducts = async () => {
     this.setState({
-      isLoading: true,
+      apiStatus: apiStatusConstants.inProgress,
     })
     const jwtToken = Cookies.get('jwt_token')
 
@@ -116,10 +122,10 @@ class AllProductsSection extends Component {
       }))
       this.setState({
         productsList: updatedData,
-        isLoading: false,
+        apiStatus: apiStatusConstants.success,
       })
     } else {
-      this.setState({apiFailure: true})
+      this.setState({apiStatus: apiStatusConstants.failure})
     }
   }
 
@@ -143,11 +149,8 @@ class AllProductsSection extends Component {
     this.setState({searchInput})
   }
 
-  onClickSearch = EmptyValue => {
-    this.setState(
-      {activecategoryId: EmptyValue, activeRatingId: EmptyValue},
-      this.getProducts,
-    )
+  onClickSearch = () => {
+    this.getProducts()
   }
 
   settingInitialStateFilters = () => {
@@ -158,58 +161,54 @@ class AllProductsSection extends Component {
     console.log('All Things are empty')
   }
 
-  renderProductsList = () => {
-    const {productsList, activeOptionId, searchInput, apiFailure} = this.state
+  renderFailureView = () => (
+    <div className="FailureView-container">
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-products-error-view.png"
+        alt="products failure"
+        className="noProducts-imageStyle"
+      />
+      <h1 className="noProducts-heading">Oops! Something Went Wrong</h1>
+      <p className="noProducts-paragraph">
+        We are having some trouble processing your request.
+        <br />
+        please try again
+      </p>
+    </div>
+  )
 
-    // TODO: Add No Products View
+  renderProductsList = () => {
+    const {productsList, activeOptionId, searchInput} = this.state
     return (
-      <>
-        {apiFailure ? (
-          <div className="FailureView-container">
+      <div className="all-products-container">
+        <ProductsHeader
+          activeOptionId={activeOptionId}
+          sortbyOptions={sortbyOptions}
+          changeSortby={this.changeSortby}
+          onChangeSearch={this.onChangeSearch}
+          onClickSearch={this.onClickSearch}
+          searchInput={searchInput}
+        />
+        {productsList.length > 0 ? (
+          <ul className="products-list">
+            {productsList.map(product => (
+              <ProductCard productData={product} key={product.id} />
+            ))}
+          </ul>
+        ) : (
+          <div className="noProducts-container">
             <img
-              src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-products-error-view.png"
-              alt="products failure"
+              src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-no-products-view.png"
+              alt="no products"
               className="noProducts-imageStyle"
             />
-            <h1 className="noProducts-heading">Oops! Something Went Wrong</h1>
+            <h1 className="noProducts-heading">No Products Found</h1>
             <p className="noProducts-paragraph">
-              We are having some trouble processing your request.
-              <br />
-              please try again
+              We could not find any products. Try Other Filters
             </p>
           </div>
-        ) : (
-          <div className="all-products-container">
-            <ProductsHeader
-              activeOptionId={activeOptionId}
-              sortbyOptions={sortbyOptions}
-              changeSortby={this.changeSortby}
-              onChangeSearch={this.onChangeSearch}
-              onClickSearch={this.onClickSearch}
-              searchInput={searchInput}
-            />
-            {productsList.length > 0 ? (
-              <ul className="products-list">
-                {productsList.map(product => (
-                  <ProductCard productData={product} key={product.id} />
-                ))}
-              </ul>
-            ) : (
-              <div className="noProducts-container">
-                <img
-                  src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-no-products-view.png"
-                  alt="no products"
-                  className="noProducts-imageStyle"
-                />
-                <h1 className="noProducts-heading">No Products Found</h1>
-                <p className="noProducts-paragraph">
-                  We could not find any products. Try Other Filters
-                </p>
-              </div>
-            )}
-          </div>
         )}
-      </>
+      </div>
     )
   }
 
@@ -219,10 +218,22 @@ class AllProductsSection extends Component {
     </div>
   )
 
-  // TODO: Add failure view
+  renderViews = () => {
+    const {apiStatus} = this.state
+    switch (apiStatus) {
+      case apiStatusConstants.success:
+        return this.renderProductsList()
+      case apiStatusConstants.failure:
+        return this.renderFailureView()
+      case apiStatusConstants.inProgress:
+        return this.renderLoader()
+      default:
+        return null
+    }
+  }
 
   render() {
-    const {isLoading, searchInput} = this.state
+    const {searchInput} = this.state
 
     return (
       <div className="all-products-section">
@@ -237,7 +248,7 @@ class AllProductsSection extends Component {
           settingInitialStateFilters={this.settingInitialStateFilters}
         />
 
-        {isLoading ? this.renderLoader() : this.renderProductsList()}
+        {this.renderViews()}
       </div>
     )
   }
